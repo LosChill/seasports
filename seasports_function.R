@@ -14,22 +14,35 @@ weekdays <- c("monday",
               "friday",
               "saturday",
               "sunday")
+# For column presentation
+upper_weekdays <- toupper(weekdays)
+# For regex evaluation
+regex_weekdays <- paste(tolower(weekdays), collapse = "|")
 
-seasports_extract <- function(url) {
+# Extract
+seasports_extract <- function(url_var) {
   
-  # Extract
-  req <- request(url)
+  # Scrape url
+  req <- request(url_var)
   resp <- req_perform(req)
   resp_html <- resp_body_html(resp)
   
+  # Extract and combine tables
   sports_table <- resp_html %>%
-    html_element(".methode-table") %>%
-    html_table()
+    html_elements(".methode-table") %>%
+    map(html_table) %>%
+    bind_rows()
   
-  # Transform
-  clean_sports_table <- sports_table %>%
+  return(sports_table)
+}
+
+# Transform
+seasports_transform <- function(tibble_var) {
+
+  # Mutate Day and League rows to columns
+  clean_sports_table <- tibble_var %>%
     mutate(
-      game_day = ifelse(tolower(X1) %in% weekdays, X1, NA),
+      game_day = ifelse(str_detect(tolower(X1), regex_weekdays), X1, NA),
       game_time = ifelse(str_detect(X1, "^\\d"), X1, NA),
       league = ifelse(is.na(game_time), X1, NA),
       game = ifelse(!is.na(game_time), X2, NA),
@@ -41,13 +54,22 @@ seasports_extract <- function(url) {
     filter(!is.na(game_time)) %>%
     select(game_day, game_time, league, game, tv, radio)
   
-  
+  # Convert time format
   time_sports_table <- clean_sports_table %>%
     mutate(
       game_time = str_replace_all(game_time, fixed("."), ""),
       game_time = format(parse_date_time(game_time, orders = c("HM%p", "H%p")), "%H:%M:%S")
-    ) %>%
-    arrange(game_time, league, game)
+    )
+
+  # Create and add day_id column
+  game_day_order <- unique(time_sports_table$game_day)
+  time_sports_table <- time_sports_table %>%
+    mutate(day_id = match(game_day, game_day_order))
+  
+  # Sort and reorder
+  time_sports_table <- time_sports_table %>%
+    relocate(day_id, .before = 1) %>%
+    arrange(day_id, game_time, league)
   
   return(time_sports_table)
 }
