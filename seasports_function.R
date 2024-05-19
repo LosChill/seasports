@@ -43,7 +43,11 @@ seasports_transform <- function(tibble_var) {
   clean_sports_table <- tibble_var %>%
     mutate(
       game_day = ifelse(str_detect(tolower(X1), regex_weekdays), X1, NA),
-      game_time = ifelse(str_detect(X1, "^\\d"), X1, NA),
+      game_time = case_when(
+        str_detect(X1, "^\\d") ~ X1,
+        str_detect(tolower(X1), "noon") ~ "12 p.m.",
+        TRUE ~ NA
+      ),
       league = ifelse(is.na(game_time), X1, NA),
       game = ifelse(!is.na(game_time), X2, NA),
       tv = ifelse(!is.na(game_time), X3, NA),
@@ -58,6 +62,7 @@ seasports_transform <- function(tibble_var) {
   time_sports_table <- clean_sports_table %>%
     mutate(
       game_time = str_replace_all(game_time, fixed("."), ""),
+      game_time = str_replace_all(game_time, fixed("*"), ""),
       game_time = format(parse_date_time(game_time, orders = c("HM%p", "H%p")), "%H:%M:%S")
     )
 
