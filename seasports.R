@@ -1,11 +1,12 @@
 library(knitr)
 
+# Source Functions ----
 source("~/Documents/Computing/projects/seasports/seasports_function.R")
 
-# Seattle Times Sports Page URL
+# Seattle Times Sports Page URL ----
 url <- "https://www.seattletimes.com/nation-world/sports-on-tv-radio-2/"
 
-# Run function
+# Run function ----
 sports_table <- seasports_extract(url)
 
 time_sports_table <- seasports_transform(sports_table)
