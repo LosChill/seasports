@@ -1,7 +1,7 @@
 suppressPackageStartupMessages({
   library(tidyverse)
   library(rvest)
-  library(httr2)
+  library(polite)
   library(lubridate)
   library(knitr)
 })
@@ -23,9 +23,8 @@ regex_weekdays <- paste(tolower(weekdays), collapse = "|")
 seasports_extract <- function(url_var) {
   
   # Scrape url
-  req <- request(url_var)
-  resp <- req_perform(req)
-  resp_html <- resp_body_html(resp)
+  session <- bow(url_var)
+  resp_html <- scrape(session)
   
   # Extract and combine tables
   sports_table <- resp_html %>%
