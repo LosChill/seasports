@@ -58,7 +58,6 @@
 Output seasports.gif
 
 Require seasports
-Require xdotool
 
 Set Shell "fish"
 Set FontSize 16

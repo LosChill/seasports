@@ -1,7 +1,7 @@
 library(knitr)
 
 # Source Functions ----
-source("~/Documents/Computing/projects/seasports/seasports_function.R")
+source("seasports_function.R")
 
 # Seattle Times Sports Page URL ----
 url <- "https://www.seattletimes.com/nation-world/sports-on-tv-radio-2/"
